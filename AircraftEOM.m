@@ -1,13 +1,9 @@
-%Contributors: Robert Reynoso/Spencer M
-%Course numer: ASEN 3801
-%File Name: QuadrotorEOM
-%created: 3/10/26
 
 function xdot = AircraftEOM(time, aircraft_state, aircraft_surfaces, wind_inertial, aircraft_parameters)
 %inputs: state vector, gravity constant, mass, distance from CG to prop, control moment coeff, aero force coeff, aero moment coeff, motor forces
 %outputs: use definitions to calculate derivative state vector 
     %% Unpacking
-
+    
     xE    = var(1);
     yE    = var(2);
     zE    = var(3);
@@ -28,15 +24,11 @@ function xdot = AircraftEOM(time, aircraft_state, aircraft_surfaces, wind_inerti
     Iy = I(2,2);
     Iz = I(3,3);
 
-    f1 = motor_forces(1);
-    f2 = motor_forces(2);
-    f3 = motor_forces(3);
-    f4 = motor_forces(4);
-
-    Zc = -(f1 + f2 + f3 + f4);                         % total thrust (negative is up)
-    Lc = (d/sqrt(2)) * (-f1 - f2 + f3 + f4);           % roll
-    Mc = (d/sqrt(2)) * ( f1 - f2 - f3 + f4);           % pitch
-    Nc = km             * ( f1 - f2 + f3 - f4);         % yaw
+    %% Aero Forces
+    density = stdatmo(zE);
+    [aero_forces, aero_moments] = AeroForcesAndMoments(aircraft_state, aircraft_surfaces, wind_inertial, density, aircraft_parameters);
+    [L, M, N] = aero_moments(:);
+    [X,Y,Z] = aero_forces(:);
 
     cphi = cos(phi);
     sphi = sin(phi);
@@ -57,23 +49,16 @@ function xdot = AircraftEOM(time, aircraft_state, aircraft_surfaces, wind_inerti
     psi_dot   =    (sphi/cth)*q + (cphi/cth)*r;
 
     %% Drag Stuff
-    Va = sqrt(u^2 + v^2 + w^2);
-    Xaero = -nu * Va * u;          % drag force x
-    Yaero = -nu * Va * v;          % drag force y 
-    Zaero = -nu * Va * w;          % drag force z 
-    Laero = -mu * abs(p) * p;   % drag moment about body x (opposes roll  rate)
-    Maero = -mu * abs(q) * q;   % drag moment about body y (opposes pitch rate)
-    Naero = -mu * abs(r) * r;   % drag moment about body z (opposes yaw   rate)
-
+   
     %% Dynamics
 
-    u_dot = r*v - q*w - g*sth          + Xaero/m;
-    v_dot = p*w - r*u + g*cth*sphi     + Yaero/m;
-    w_dot = q*u - p*v + g*cth*cphi     + Zaero/m + Zc/m;
+    u_dot = r*v - q*w - g*sth          + X/m;
+    v_dot = p*w - r*u + g*cth*sphi     + Y/m;
+    w_dot = q*u - p*v + g*cth*cphi     + Z/m;
 
-    p_dot = ((Iy - Iz)/Ix)*q*r + (Laero + Lc)/Ix;
-    q_dot = ((Iz - Ix)/Iy)*p*r + (Maero + Mc)/Iy;
-    r_dot = ((Ix - Iy)/Iz)*p*q + (Naero + Nc)/Iz;
+    p_dot = ((Iy - Iz)/Ix)*q*r + (L)/Ix;
+    q_dot = ((Iz - Ix)/Iy)*p*r + (M)/Iy;
+    r_dot = ((Ix - Iy)/Iz)*p*q + (N)/Iz;
 
     %% Assemble
     var_dot = [xE_dot;
