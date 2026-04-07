@@ -1,0 +1,10 @@
+function [xE,yE,zE] = TransformFromInertialToBody(inertial,bodyangles)
+
+DCM = angle2dcm(bodyangles(1), bodyangles(2), 'ZYX');
+bodyframe =  inertial * DCM;
+xE = bodyframe(1);
+yE = bodyframe(2);
+zE = bodyframe(3);
+
+
+end

@@ -3,32 +3,38 @@ function xdot = AircraftEOM(time, aircraft_state, aircraft_surfaces, wind_inerti
 %inputs: state vector, gravity constant, mass, distance from CG to prop, control moment coeff, aero force coeff, aero moment coeff, motor forces
 %outputs: use definitions to calculate derivative state vector 
     %% Unpacking
-    
-    xE    = var(1);
-    yE    = var(2);
-    zE    = var(3);
+    g = aircraft_parameters.g;
+    m = aircraft_parameters.m;
+    xE    = aircraft_state(1);
+    yE    = aircraft_state(2);
+    zE    = aircraft_state(3);
 
-    phi   = var(4);   % roll
-    theta = var(5);   % pitch
-    psi   = var(6);   % yaw
+    phi   = aircraft_state(4);   % roll
+    theta = aircraft_state(5);   % pitch
+    psi   = aircraft_state(6);   % yaw
 
-    u     = var(7);
-    v     = var(8);
-    w     = var(9);
+    u     = aircraft_state(7);
+    v     = aircraft_state(8);
+    w     = aircraft_state(9);
 
-    p     = var(10);
-    q     = var(11);
-    r     = var(12);
+    p     = aircraft_state(10);
+    q     = aircraft_state(11);
+    r     = aircraft_state(12);
 
     Ix = aircraft_parameters.Ix;
     Iy = aircraft_parameters.Iy;
     Iz = aircraft_parameters.Iz;
 
     %% Aero Forces
-    density = atmosisa(zE);
+    
+    [~,~,~,density] = atmosisa(-zE);
     [aero_forces, aero_moments] = AeroForcesAndMoments(aircraft_state, aircraft_surfaces, wind_inertial, density, aircraft_parameters);
-    [L, M, N] = aero_moments(:);
-    [X,Y,Z] = aero_forces(:);
+    L = aero_moments(1);
+    M = aero_moments(2);
+    N = aero_moments(3);
+    X = aero_forces(1);
+    Y = aero_forces(2);
+    Z = aero_forces(3);
 
     cphi = cos(phi);
     sphi = sin(phi);
@@ -61,7 +67,7 @@ function xdot = AircraftEOM(time, aircraft_state, aircraft_surfaces, wind_inerti
     r_dot = ((Ix - Iy)/Iz)*p*q + (N)/Iz;
 
     %% Assemble
-    var_dot = [xE_dot;
+    xdot = [xE_dot;
                yE_dot;
                zE_dot;
                phi_dot;
