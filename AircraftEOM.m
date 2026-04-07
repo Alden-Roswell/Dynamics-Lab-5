@@ -20,12 +20,12 @@ function xdot = AircraftEOM(time, aircraft_state, aircraft_surfaces, wind_inerti
     q     = var(11);
     r     = var(12);
 
-    Ix = I(1,1);
-    Iy = I(2,2);
-    Iz = I(3,3);
+    Ix = aircraft_parameters.Ix;
+    Iy = aircraft_parameters.Iy;
+    Iz = aircraft_parameters.Iz;
 
     %% Aero Forces
-    density = stdatmo(zE);
+    density = atmosisa(zE);
     [aero_forces, aero_moments] = AeroForcesAndMoments(aircraft_state, aircraft_surfaces, wind_inertial, density, aircraft_parameters);
     [L, M, N] = aero_moments(:);
     [X,Y,Z] = aero_forces(:);
