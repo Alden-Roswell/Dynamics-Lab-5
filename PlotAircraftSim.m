@@ -115,18 +115,18 @@ figure(fig(5))
 hold on;
 grid on;
 subplot(4,1,1); plot(time, rad2deg(control_input_array(1,:)),col(1),DisplayName=col(2))
-title('Control Input: Elevator')
+title('Control Input: Aileron')
 xlabel('Time (s)')
-ylabel('Z_c')
+ylabel('Aileron (degrees)')
 set(gca, 'YDir', 'reverse')
 legend('location','best')
 grid on;
 hold on;
 
 subplot(4,1,2); plot(time, rad2deg(control_input_array(2,:)),col(1),DisplayName=col(2))
-title('Control Input: Aileron')
+title('Control Input: Elevator')
 xlabel('Time (s)')
-ylabel('L_c')
+ylabel('Elevator (degrees)')
 legend('location','best')
 grid on;
 hold on;
@@ -134,7 +134,7 @@ hold on;
 subplot(4,1,3); plot(time, rad2deg(control_input_array(3,:)),col(1),DisplayName=col(2))
 title('Control Input: Rudder')
 xlabel('Time (s)')
-ylabel('M_c')
+ylabel('Rudder (degrees)')
 legend('location','best')
 grid on;
 hold on;
@@ -142,8 +142,9 @@ hold on;
 subplot(4,1,4); plot(time, control_input_array(4,:),col(1),DisplayName=col(2))
 title('Control Input: Throttle')
 xlabel('Time (s)')
-ylabel('N_c')
+ylabel('Throttle')
 legend('location','best')
+ylim([0,1])
 grid on;
 hold on;
 
@@ -160,12 +161,9 @@ plot3(aircraft_state_array(1,:),aircraft_state_array(2,:),aircraft_state_array(3
 scatter3(aircraft_state_array(1,1),aircraft_state_array(2,1),aircraft_state_array(3,1), 'g', 'filled','HandleVisibility','off')
 scatter3(aircraft_state_array(1,end),aircraft_state_array(2,end),aircraft_state_array(3,end), 'r', 'filled','HandleVisibility','off')
 set(gca, 'ZDir', 'reverse')
-axis equal; box on;
-%try xlim([pEmins(1)-pErange(1) pEmaxs(1)+pErange(1)]); catch; end
-%try ylim([pEmins(2)-pErange(2) pEmaxs(2)+pErange(2)]); catch; end
-%try zlim([pEmins(3)-pErange(3) pEmaxs(3)+pErange(3)]); catch; end
+
 view(3);
-% legend('Position',[0.762452689691095 0.599999999354283 0.12578125141561 0.0322916673123835]);
+
 legend('location','best');
 xlabel('North (m)');
 ylabel('East (m)');
