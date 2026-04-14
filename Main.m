@@ -7,7 +7,7 @@ run('ttwistor.m');
 aircraft_surfaces = [0,0,0,0]';
 wind_intertial = [0,0,0]';
 y0 = [0 0 -1609.4 0 0 0 21 0 0 0 0 0]';
-tspan = [0,100];
+tspan = [0,30];
 ode = @(time, aircraft_state) AircraftEOM(time, aircraft_state, aircraft_surfaces, wind_intertial, aircraft_parameters);
 [t,X] = ode45(ode,tspan,y0);
 control_array = zeros(4, length(X));
@@ -16,36 +16,87 @@ col = ["b", "asd"]
 PlotAircraftSim(t,X', control_array,fig, col)
 
 
-aircraft_surfaces_2 = [0.1079,0,0,0.3181]';
-wind_intertial_2 = [0,0,0]';
-            
-y0_2 = [0 0 -1800  ...
-        0 0.0278 0    ...
-        20.99 0 0.5837 ...
-        0 0 0]';
-tspan_2 = [0,100];
-ode_2 = @(time, aircraft_state_2) AircraftEOM(time, aircraft_state_2, aircraft_surfaces_2, wind_intertial_2, aircraft_parameters);
-[t_2,X_2] = ode45(ode_2,tspan_2,y0_2);
-control_array_2 = repmat(aircraft_surfaces_2', length(X_2),1)';
-fig_2 = 7:1:12
-col = ["b", "asd"]
-PlotAircraftSim(t_2,X_2', control_array_2,fig_2, col)
-
-
-
-aircraft_surfaces_21 = deg2rad([5,2,-13,0.3])';
+aircraft_surfaces_21 = [0.1079,0,0,0.3181]';
 wind_intertial_21 = [0,0,0]';
             
 y0_21 = [0 0 -1800  ...
-        deg2rad([15, -12, 270])    ...
-        19 3 -2 ...
-        deg2rad([0.08 -0.2 0])]';
-tspan_21 = [0,100];
+        0 0.0278 0    ...
+        20.99 0 0.5837 ...
+        0 0 0]';
+tspan_21 = [0,20];
 ode_21 = @(time, aircraft_state_21) AircraftEOM(time, aircraft_state_21, aircraft_surfaces_21, wind_intertial_21, aircraft_parameters);
 [t_21,X_21] = ode45(ode_21,tspan_21,y0_21);
 control_array_21 = repmat(aircraft_surfaces_21', length(X_21),1)';
 fig_21 = 7:1:12
-col = ["r", "asd2"]
+col = ["b", "asd"]
 PlotAircraftSim(t_21,X_21', control_array_21,fig_21, col)
-axis equal
+
+
+
+aircraft_surfaces_22 = deg2rad([5,2,-13,0.3])';
+wind_intertial_22 = [0,0,0]';
+            
+y0_22 = [0 0 -1800  ...
+        deg2rad([15, -12, 270])    ...
+        19 3 -2 ...
+        deg2rad([0.08 -0.2 0])]';
+tspan_22 = [0,20];
+ode_22 = @(time, aircraft_state_22) AircraftEOM(time, aircraft_state_22, aircraft_surfaces_22, wind_intertial_22, aircraft_parameters);
+[t_22,X_22] = ode45(ode_22,tspan_22,y0_22);
+control_array_22 = repmat(aircraft_surfaces_22', length(X_22),1)';
+fig_22 = 13:1:18
+col = ["r", "asd2"]
+PlotAircraftSim(t_22,X_22', control_array_22,fig_22, col)
+
+
+aircraft_surfaces_31 = [0.1079,0,0,0.3181]';
+wind_intertial_31 = [0,0,0]';
+            
+y0_31 = [0 0 -1800  ...
+        0 0.0278 0    ...
+        20.99 0 0.5837 ...
+        0 0 0]';
+tspan_31 = [0,5];
+doublet_size = deg2rad(15);
+doublet_time = 0.25;
+ode_31 = @(time, aircraft_state_31) AircraftEOM_doublet(time, aircraft_state_31, aircraft_surfaces_31, doublet_size, doublet_time, wind_intertial_31, aircraft_parameters);
+[t_31,X_31] = ode45(ode_31,tspan_31,y0_31);
+control_array_31 = repmat(aircraft_surfaces_31', length(X_31),1)';
+for i = 1:length(t_31)
+    if t_31(i) < doublet_time
+    control_array_31(1,i) = control_array_31(1,i) + doublet_size;
+    elseif t_31(i) < 2 * doublet_time
+    control_array_31(1,i) = control_array_31(1,i) - doublet_size;
+    end
+end
+fig_31 = 19:1:24
+col = ["b", "asd2"]
+PlotAircraftSim(t_31,X_31', control_array_31,fig_31, col)
+
+
+
+aircraft_surfaces_32 = [0.1079,0,0,0.3181]';
+wind_intertial_32 = [0,0,0]';
+            
+y0_32 = [0 0 -1800  ...
+        0 0.0278 0    ...
+        20.99 0 0.5837 ...
+        0 0 0]';
+tspan_32 = [0,100];
+doublet_size = deg2rad(15);
+doublet_time = 0.25;
+ode_32 = @(time, aircraft_state_32) AircraftEOM_doublet(time, aircraft_state_32, aircraft_surfaces_32, doublet_size, doublet_time, wind_intertial_32, aircraft_parameters);
+[t_32,X_32] = ode45(ode_32,tspan_32,y0_32);
+control_array_32 = repmat(aircraft_surfaces_32', length(X_32),1)';
+for i = 1:length(t_32)
+    if t_32(i) < doublet_time
+    control_array_32(1,i) = control_array_32(1,i) + doublet_size;
+    elseif t_32(i) < 2 * doublet_time
+    control_array_32(1,i) = control_array_32(1,i) - doublet_size;
+    end
+end
+fig_32 = 25:1:30
+col = ["b", "asd2"]
+PlotAircraftSim(t_32,X_32', control_array_32,fig_32, col)
+
 
