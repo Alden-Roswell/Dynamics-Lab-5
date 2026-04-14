@@ -12,7 +12,7 @@ ode = @(time, aircraft_state) AircraftEOM(time, aircraft_state, aircraft_surface
 [t,X] = ode45(ode,tspan,y0);
 control_array = zeros(4, length(X));
 fig = 1:1:6
-col = ["b", "asd"]
+col = ["b", "Problem 2.1"]
 PlotAircraftSim(t,X', control_array,fig, col)
 
 
@@ -28,7 +28,7 @@ ode_21 = @(time, aircraft_state_21) AircraftEOM(time, aircraft_state_21, aircraf
 [t_21,X_21] = ode45(ode_21,tspan_21,y0_21);
 control_array_21 = repmat(aircraft_surfaces_21', length(X_21),1)';
 fig_21 = 7:1:12
-col = ["b", "asd"]
+col = ["b", "Problem 2.2"]
 PlotAircraftSim(t_21,X_21', control_array_21,fig_21, col)
 
 
@@ -45,7 +45,7 @@ ode_22 = @(time, aircraft_state_22) AircraftEOM(time, aircraft_state_22, aircraf
 [t_22,X_22] = ode45(ode_22,tspan_22,y0_22);
 control_array_22 = repmat(aircraft_surfaces_22', length(X_22),1)';
 fig_22 = 13:1:18
-col = ["r", "asd2"]
+col = ["r", "Problem 2.3"]
 PlotAircraftSim(t_22,X_22', control_array_22,fig_22, col)
 
 
@@ -70,7 +70,7 @@ for i = 1:length(t_31)
     end
 end
 fig_31 = 19:1:24
-col = ["b", "asd2"]
+col = ["b", "Problem 3.1"]
 PlotAircraftSim(t_31,X_31', control_array_31,fig_31, col)
 
 
@@ -96,7 +96,154 @@ for i = 1:length(t_32)
     end
 end
 fig_32 = 25:1:30
-col = ["b", "asd2"]
+col = ["b", "Problem 3.2"]
 PlotAircraftSim(t_32,X_32', control_array_32,fig_32, col)
 
+% Autosave all figures created above into their own folders.
+% Determine all figure handles (assumes figures were created by PlotAircraftSim)
+figHandles = findall(0, 'Type', 'figure');
 
+% Base output directory (relative to current folder)
+baseDir = fullfile(pwd, 'AircraftPlots');
+if ~exist(baseDir, 'dir')
+    mkdir(baseDir);
+end
+
+% Collect metadata for each figure
+nF = numel(figHandles);
+meta(nF) = struct('Handle', [], 'Num', [], 'Name', '', 'VectorID', '', 'Legend', '');
+for k = 1:nF
+    fh = figHandles(k);
+    meta(k).Handle = fh;
+    meta(k).Num = fh.Number;
+    meta(k).Name = get(fh, 'Name');
+    % Try to read VectorID from UserData if present
+    ud = get(fh, 'UserData');
+    if isstruct(ud) && isfield(ud, 'VectorID')
+        meta(k).VectorID = string(ud.VectorID);
+    else
+        meta(k).VectorID = "";
+    end
+    % Try to read legend entry from axes legend if present
+    try
+        ax = findobj(fh, 'type', 'axes', '-not', 'Tag', 'legend');
+        if ~isempty(ax)
+            % pick first axes
+            ax = ax(1);
+            lg = legend(ax);
+            if ~isempty(lg) && isvalid(lg) && ~isempty(lg.String)
+                % Use first legend string as the vector's label
+                meta(k).Legend = string(lg.String{1});
+            else
+                meta(k).Legend = "";
+            end
+        else
+            meta(k).Legend = "";
+        end
+    catch
+        meta(k).Legend = "";
+    end
+end
+
+% If no VectorID found, try to parse from Name using pattern "vec" or "vector" or "FigVec"
+for k = 1:nF
+    if strlength(meta(k).VectorID) == 0 && ~isempty(meta(k).Name)
+        nm = char(meta(k).Name);
+        tok = regexp(nm, '(?:vector|vec|figvec)[\s_:-]*([0-9]+)', 'tokens', 'ignorecase');
+        if ~isempty(tok)
+            meta(k).VectorID = string(tok{1}{1});
+        end
+    end
+end
+
+% If still none assigned, create grouping based on figure number ranges:
+if all(strlength([meta.VectorID]) == 0)
+    % Sort by figure number
+    [~, order] = sort([meta.Num]);
+    sortedNums = [meta(order).Num];
+    % Attempt to detect common increments (like groups of 6 figures per vector)
+    groupSizes = [6, 12, 18, 1];
+    assigned = false(1, nF);
+    for gs = groupSizes
+        if all(assigned), break; end
+        if mod(sortedNums(end) - sortedNums(1) + 1, gs) == 0 || gs == 1
+            for i = 1:gs:numel(sortedNums)
+                idx = i:(i+gs-1);
+                if idx(end) > numel(sortedNums), break; end
+                groupID = sprintf('%d', ceil(i/gs));
+                for j = idx
+                    meta(order(j)).VectorID = string(groupID);
+                    assigned(order(j)) = true;
+                end
+            end
+            if all(assigned), break; end
+        end
+    end
+    % If still unassigned, give each figure its own group id
+    for k = 1:nF
+        if strlength(meta(k).VectorID) == 0
+            meta(k).VectorID = sprintf('fig%d', meta(k).Num);
+        end
+    end
+end
+
+% Build mapping from VectorID to list of figure handles
+vecIDs = unique([meta.VectorID]);
+for v = 1:numel(vecIDs)
+    vid = vecIDs(v);
+    if vid == ""
+        continue;
+    end
+
+    % Determine folder name: prefer Legend (from any figure in the group), otherwise use VectorID
+    sel = find([meta.VectorID] == vid);
+    % choose first non-empty Legend among group
+    legendNames = [meta(sel).Legend];
+    chosenLegend = "";
+    for ii = 1:numel(legendNames)
+        if strlength(legendNames(ii)) > 0
+            chosenLegend = legendNames(ii);
+            break;
+        end
+    end
+    if strlength(chosenLegend) > 0
+        safeVid = regexprep(char(chosenLegend), '[<>:"/\\|?*]', '_');
+    else
+        safeVid = regexprep(char(vid), '[<>:"/\\|?*]', '_');
+    end
+
+    outDir = fullfile(baseDir, safeVid);
+    if ~exist(outDir, 'dir')
+        mkdir(outDir);
+    end
+
+    % Get figures belonging to this vector and sort by figure number
+    [~, sidx] = sort([meta(sel).Num]);
+    sel = sel(sidx);
+
+    % Save each figure in the vector folder (only PNG as requested)
+    for j = 1:numel(sel)
+        fh = meta(sel(j)).Handle;
+        figNum = meta(sel(j)).Num;
+        figName = meta(sel(j)).Name;
+        % sanitize figName for filenames
+        safeName = regexprep(figName, '[<>:"/\\|?*]', '_');
+        safeName = strtrim(safeName);
+        if isempty(safeName)
+            safeName = sprintf('Figure_%d', figNum);
+        end
+        fileBase = fullfile(outDir, sprintf('Fig%d', mod(figNum,6) + 1));
+
+        % Bring figure to focus (optional)
+        try
+            set(0, 'CurrentFigure', fh);
+        catch
+        end
+
+        % Save as PNG only
+        try
+            print(fh, [fileBase, '.png'], '-dpng', '-r300');
+        catch
+        end
+    end
+end
