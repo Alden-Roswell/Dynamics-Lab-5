@@ -23,7 +23,7 @@ y0_21 = [0 0 -1800  ...
         0 0.0278 0    ...
         20.99 0 0.5837 ...
         0 0 0]';
-tspan_21 = [0,20];
+tspan_21 = [0,100];
 ode_21 = @(time, aircraft_state_21) AircraftEOM(time, aircraft_state_21, aircraft_surfaces_21, wind_intertial_21, aircraft_parameters);
 [t_21,X_21] = ode45(ode_21,tspan_21,y0_21);
 control_array_21 = repmat(aircraft_surfaces_21', length(X_21),1)';
@@ -40,12 +40,12 @@ y0_22 = [0 0 -1800  ...
         deg2rad([15, -12, 270])    ...
         19 3 -2 ...
         deg2rad([0.08 -0.2 0])]';
-tspan_22 = [0,20];
+tspan_22 = [0,100];
 ode_22 = @(time, aircraft_state_22) AircraftEOM(time, aircraft_state_22, aircraft_surfaces_22, wind_intertial_22, aircraft_parameters);
 [t_22,X_22] = ode45(ode_22,tspan_22,y0_22);
 control_array_22 = repmat(aircraft_surfaces_22', length(X_22),1)';
 fig_22 = 13:1:18
-col = ["r", "Problem 2.3"]
+col = ["b", "Problem 2.3"]
 PlotAircraftSim(t_22,X_22', control_array_22,fig_22, col)
 
 

@@ -62,9 +62,23 @@ function xdot = AircraftEOM(time, aircraft_state, aircraft_surfaces, wind_inerti
     v_dot = p*w - r*u + g*cth*sphi     + Y/m;
     w_dot = q*u - p*v + g*cth*cphi     + Z/m;
 
-    p_dot = ((Iy - Iz)/Ix)*q*r + (L)/Ix;
-    q_dot = ((Iz - Ix)/Iy)*p*r + (M)/Iy;
-    r_dot = ((Ix - Iy)/Iz)*p*q + (N)/Iz;
+    
+   %% Gamma Definitions
+Ixz = aircraft_parameters.Ixz;
+Gamma = Ix*Iz - Ixz^2;
+
+G1 = Ixz*(Ix - Iy + Iz) / Gamma;
+G2 = (Iz*(Iz - Iy) + Ixz^2) / Gamma;
+G3 = Iz / Gamma;
+G4 = Ixz / Gamma;
+G5 = (Iz - Ix) / Iy;
+G6 = Ixz / Iy;
+G7 = (Ix*(Ix - Iy) + Ixz^2) / Gamma;
+G8 = Ix / Gamma;
+
+p_dot = G1*p*q - G2*q*r + G3*L + G4*N;
+q_dot = G5*p*r - G6*(p^2 - r^2) + M/Iy;
+r_dot = G7*p*q - G1*q*r + G4*L + G8*N;
 
     %% Assemble
     xdot = [xE_dot;
